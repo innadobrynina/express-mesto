@@ -18,25 +18,25 @@ module.exports.createUser = (req, res) => {
 // возвращаем всех пользователей
 module.exports.getUser = (req, res) => {
   User.find({})
-    .then((user) => res.send({ data: user }))
-    .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
+    .then((users) => res.status(200).send(users))
+    .catch(() => res.status(500).send({ message: 'Произошла ошибка на сервере' }));
 };
 
 // возвращаем пользователя по id
 module.exports.getUserId = (req, res) => {
-  if (req.params.userId.length !== 24) {
-    res.status(400).send({ message: 'Переданы некорректные данные' });
-  } else {
-    User.findById(req.params.userId)
-      .then((user) => {
-        if (user === null) {
-          res.status(404).send({ message: 'Запрашиваемый пользователь не найден' });
-        } else {
-          res.send({ data: user });
-        }
-      })
-      .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
-  }
+  User.findById(req.params.userId)
+    .then((user) => {
+      if (!user) {
+        return res.status(404).send({ message: 'Пользователя с таким Id нет' });
+      }
+      return res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        return res.status(400).send({ message: 'Переданы некорректные данные' });
+      }
+      return res.status(500).send({ message: 'Произошла ошибка на сервере' });
+    });
 };
 
 // обновляем профиль пользователя
@@ -58,7 +58,7 @@ module.exports.patchUser = (req, res) => {
       if (err.name === 'CastError' || err.name === 'ValidationError') {
         res.status(400).send({ message: 'Переданы некорректные данные' });
       } else {
-        res.status(500).send({ message: 'Произошла ошибка' });
+        res.status(500).send({ message: 'Произошла ошибка на сервере' });
       }
     });
 };

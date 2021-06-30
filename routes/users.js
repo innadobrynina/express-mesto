@@ -5,14 +5,10 @@ const {
   getUsers, getUser, getUserId, patchUser, patchAvatar,
 } = require('../controllers/users');
 
-usersRoutes.post('/users', getUsers);
-usersRoutes.get('/users/me', getUser);
+usersRoutes.get('/users', getUser);
+usersRoutes.get('/users/me', getUsers);
 
-usersRoutes.get('/users/:userId', celebrate({
-  params: Joi.object().keys({
-    id: Joi.string().required().length(24).hex(),
-  }),
-}), getUserId);
+usersRoutes.get('/users/:userId', getUserId);
 
 usersRoutes.patch('/users/me', celebrate({
   body: Joi.object().keys({
@@ -23,9 +19,7 @@ usersRoutes.patch('/users/me', celebrate({
 
 usersRoutes.patch('/users/me/avatar', celebrate({
   body: Joi.object().keys({
-    avatar: Joi.string()
-      .required()
-      .regex(/^(https?:\/\/)([\da-z.-]+)\.([a-z.]{2,6})([/\w\W.-]*)#?$/),
+    avatar: Joi.string().min(10),
   }),
 }), patchAvatar);
 

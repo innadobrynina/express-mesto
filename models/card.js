@@ -1,10 +1,5 @@
 const mongoose = require('mongoose');
 
-const validateLink = function (link) {
-  const linkRegex = /((http|https):\/\/)?(www\.)?([A-Za-zА-Яа-я0-9]{1}[A-Za-zА-Яа-я0-9-]*\.?)*\.{1}[A-Za-zА-Яа-я0-9-]{2,8}(\/([\w#!:.?+=&%@!\-/])*)?/g;
-  return linkRegex.test(link);
-};
-
 const cardSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -15,18 +10,22 @@ const cardSchema = new mongoose.Schema({
   link: {
     type: String,
     required: true,
+    validate: {
+      validator: (v) =>
+        // eslint-disable-next-line implicit-arrow-linebreak
+        /^(https?:\/\/)([\da-z.-]+)\.([a-z.]{2,6})([/\w\W.-]*)#?$/g.test(v),
+      message: 'Некорректный URL',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
     required: true,
   },
-  likes: [{
-    type: mongoose.Schema.Types.ObjectId,
+  likes: {
+    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
     default: [],
-    validate: [validateLink, 'Please fill a valid link address'],
-    match: [/((http|https):\/\/)?(www\.)?([A-Za-zА-Яа-я0-9]{1}[A-Za-zА-Яа-я0-9-]*\.?)*\.{1}[A-Za-zА-Яа-я0-9-]{2,8}(\/([\w#!:.?+=&%@!\-/])*)?/g, 'Please fill a valid link address'],
   },
-  ],
   createdAt: {
     type: Date,
     default: Date.now,

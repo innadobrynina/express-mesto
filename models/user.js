@@ -1,7 +1,5 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
-const bcrypt = require('bcryptjs');
-const ForbiddenError = require('../errors/ForbiddenError');
 
 const userSchema = new mongoose.Schema({
 
@@ -14,21 +12,20 @@ const userSchema = new mongoose.Schema({
 
   avatar: {
     type: String,
-    required: true,
-    link: String,
-    default: 'Исследователь',
+    validate: {
+      validator(v) {
+        const regex = /https?:\/\/[w{3}.]?[\S^а-яё]/gi; // ? экранируем оба слэша. далее к пути: получается, что \S ищет вообще все, кроме пробелов. значит, он нам подходит для поиска цифр, латинских букв и разных символов. но нам не нужны кириллические буквы. значит, мы их исключаем с помощью карета.
+        return regex.test(v);
+      },
+      message: 'Ссылка на аватар недействительна!',
+    },
+    default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
-
   about: {
     type: String,
     minlength: 2,
     maxlength: 30,
-    default:
-      'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
-    validate: {
-      validator: (v) => validator.isURL(v, { protocols: ['http', 'https'], require_tld: true, require_protocol: true }),
-      message: 'Некорректный URL',
-    },
+    default: 'Исследователь',
   },
   email: {
     type: String,
@@ -38,7 +35,7 @@ const userSchema = new mongoose.Schema({
       validator(v) {
         return validator.isEmail(v);
       },
-      message: 'Неправильный формат почты',
+      message: 'Email невалиден',
     },
   },
   password: {
@@ -48,23 +45,5 @@ const userSchema = new mongoose.Schema({
     minlength: 6,
   },
 });
-
-userSchema.statics.findUserByCredentials = function findUserByCredentials(email, password) {
-  return this.findOne({ email })
-    .select('+password')
-    .then((user) => {
-      if (!user) {
-        return Promise.reject(new ForbiddenError('Неправильные почта или пароль'));
-      }
-
-      return bcrypt.compare(password, user.password).then((matched) => {
-        if (!matched) {
-          return Promise.reject(new ForbiddenError('Неправильные почта или пароль'));
-        }
-
-        return user;
-      });
-    });
-};
 
 module.exports = mongoose.model('user', userSchema);

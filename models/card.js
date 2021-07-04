@@ -11,9 +11,10 @@ const cardSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: (v) =>
-        // eslint-disable-next-line implicit-arrow-linebreak
-        /^(https?:\/\/)([\da-z.-]+)\.([a-z.]{2,6})([/\w\W.-]*)#?$/g.test(v),
+      validator(v) {
+        const regex = /https?:\/\/[w{3}.]?[\S^а-яё]/gi; // ? экранируем оба слэша. далее к пути: получается, что \S ищет вообще все, кроме пробелов. значит, он нам подходит для поиска цифр, латинских букв и разных символов. но нам не нужны кириллические буквы. значит, мы их исключаем с помощью карета.
+        return regex.test(v);
+      },
       message: 'Некорректный URL',
     },
   },
@@ -22,10 +23,10 @@ const cardSchema = new mongoose.Schema({
     ref: 'user',
     required: true,
   },
-  likes: {
-    type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'user' }],
-    default: [],
-  },
+  likes: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+  }],
   createdAt: {
     type: Date,
     default: Date.now,

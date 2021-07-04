@@ -1,33 +1,18 @@
 const usersRoutes = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
+const { auth } = require('../middlewares/auth');
+const { validateUserId, validateUserInfo } = require('../middlewares/celebrate');
 
 const {
-  getUsers, getUser, getUserId, patchUser, patchAvatar,
+  getUsers, getCurrentUser, getUserId, patchUser, patchAvatar,
 } = require('../controllers/users');
 
 usersRoutes.get('/users', getUsers);
-usersRoutes.get('/users/me', getUser);
+usersRoutes.get('/users/me', auth, getCurrentUser);
 
-usersRoutes.get('/users/:userId', celebrate({
-  params: Joi.object().keys({
+usersRoutes.get('/users/:userId', validateUserId, getUserId);
 
-    userId: Joi.string().required().length(24).hex(),
-  }),
-}), getUserId);
+usersRoutes.patch('/users/me', validateUserInfo, patchUser);
 
-usersRoutes.patch('/users/me', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    about: Joi.string().required().min(2).max(30),
-  }),
-}), patchUser);
-
-usersRoutes.patch('/users/me/avatar', celebrate({
-  body: Joi.object().keys({
-    avatar: Joi.string()
-      .required()
-      .regex(/^(https?:\/\/)([\da-z.-]+)\.([a-z.]{2,6})([/\w\W.-]*)#?$/),
-  }),
-}), patchAvatar);
+usersRoutes.patch('/users/me/avatar', validateUserInfo, patchAvatar);
 
 module.exports = usersRoutes;

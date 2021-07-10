@@ -6,7 +6,6 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
-const NotFoundUserError = require('../errors/NotFoundUserError');
 
 // возвращаем всех пользователей
 const getUsers = (req, res, next) => {
@@ -46,7 +45,15 @@ const createUser = (req, res, next) => {
         about,
         avatar,
       })
-        .then((user) => res.status(200).send({ data: user }))
+        // eslint-disable-next-line no-unused-vars
+        .then((user) => {
+          res.status(200).send({
+            email,
+            name,
+            about,
+            avatar,
+          });
+        })
         .catch((err) => {
           if (!email || !password) {
             return next(new BadRequestError('Вы не заполнили обязательные поля'));
@@ -110,19 +117,19 @@ const patchAvatar = (req, res, next) => {
 const login = (req, res, next) => {
   const { email, password } = req.body;
 
-  User.findOne({ email })
+  User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new NotFoundUserError('Неправильные почта или пароль');
+        throw new NotFoundError('Неправильные почта или пароль');
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new NotFoundUserError('Неправильные почта или пароль');
+            throw new NotFoundError('Неправильные почта или пароль');
           }
           const token = jwt.sign(
             { _id: user._id },
-            'very-secret-key',
+            req.app.locals.jwtKey,
             { expiresIn: '7d' },
           );
 
@@ -139,7 +146,7 @@ const login = (req, res, next) => {
 };
 
 const getCurrentUser = (req, res, next) => {
-  User.findById(req.user._id).select('+password')
+  User.findById(req.user._id)
     .orFail(new NotFoundError('Такого пользователя нет в базе'))
     .then((user) => res.status(200).send(user))
     .catch((err) => {

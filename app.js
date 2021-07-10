@@ -7,7 +7,7 @@ const { login, createUser } = require('./controllers/users');
 
 const { auth } = require('./middlewares/auth');
 const errorHandler = require('./middlewares/errorHandler');
-const { validateEmailAndPassword } = require('./middlewares/celebrate');
+const { validateEmailAndPassword, validateRegistration } = require('./middlewares/celebrate');
 
 const noSuchPageRouter = require('./routes/noSuchPage');
 
@@ -16,6 +16,8 @@ const cardsRoutes = require('./routes/cards');
 
 const { PORT = 3000 } = process.env;
 const app = express();
+
+app.locals.jwtKey = 'secret-key';
 
 app.use(cookieParser());
 app.use(errors());
@@ -32,7 +34,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 app.post('/signin', validateEmailAndPassword, login);
-app.post('/signup', validateEmailAndPassword, createUser);
+app.post('/signup', validateRegistration, createUser);
 
 app.use(auth);
 

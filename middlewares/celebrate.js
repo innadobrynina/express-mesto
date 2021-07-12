@@ -21,12 +21,12 @@ const customValidateURL = (value, helper) => {
 };
 
 const userInfo = {
-  name: Joi.string().max(30).default('Жак-Ив Кусто'),
-  about: Joi.string().max(30).default('Исследователь'),
+  name: Joi.string().max(30).required(),
+  about: Joi.string().max(30).required(),
 };
 
 const userAvatar = {
-  avatar: Joi.string().custom(customValidateURL).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
+  avatar: Joi.string().custom(customValidateURL).required(),
 };
 
 const EmailAndPassword = {

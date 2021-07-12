@@ -6,6 +6,7 @@ const User = require('../models/user');
 const NotFoundError = require('../errors/NotFoundError');
 const ConflictError = require('../errors/ConflictError');
 const BadRequestError = require('../errors/BadRequestError');
+const AuthError = require('../errors/AuthError');
 
 // возвращаем всех пользователей
 const getUsers = (req, res, next) => {
@@ -120,12 +121,12 @@ const login = (req, res, next) => {
   User.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new NotFoundError('Неправильные почта или пароль');
+        throw new AuthError('Неправильные почта или пароль');
       }
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new NotFoundError('Неправильные почта или пароль');
+            throw new AuthError('Неправильные почта или пароль');
           }
           const token = jwt.sign(
             { _id: user._id },

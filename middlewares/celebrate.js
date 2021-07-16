@@ -20,13 +20,22 @@ const customValidateURL = (value, helper) => {
   return value;
 };
 
-const userInfo = {
+const userInfoUpdate = {
   name: Joi.string().max(30).required(),
   about: Joi.string().max(30).required(),
 };
 
-const userAvatar = {
+const userAvatarUpdate = {
   avatar: Joi.string().custom(customValidateURL).required(),
+};
+
+const userInfo = {
+  name: Joi.string().max(30).default('Жак-Ив Кусто'),
+  about: Joi.string().max(30).default('Исследователь'),
+};
+
+const userAvatar = {
+  avatar: Joi.string().custom(customValidateURL).default('https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png'),
 };
 
 const EmailAndPassword = {
@@ -34,8 +43,16 @@ const EmailAndPassword = {
   password: Joi.string().required().min(6),
 };
 
+const validateUserInfoUpdate = celebrate({
+  body: Joi.object().keys(userInfoUpdate),
+});
+
 const validateUserInfo = celebrate({
   body: Joi.object().keys(userInfo),
+});
+
+const validateUserAvatarUpdate = celebrate({
+  body: Joi.object().keys(userAvatarUpdate),
 });
 
 const validateUserAvatar = celebrate({
@@ -48,6 +65,10 @@ const validateEmailAndPassword = celebrate({
 
 const validateRegistration = celebrate({
   body: Joi.object().keys({ ...userInfo, ...userAvatar, ...EmailAndPassword }),
+});
+
+const validateUpdate = celebrate({
+  body: Joi.object().keys({ ...userInfoUpdate, ...userAvatarUpdate, ...EmailAndPassword }),
 });
 
 const validateCardInfo = celebrate({
@@ -76,4 +97,7 @@ module.exports = {
   validateCardInfo,
   validateCardId,
   validateRegistration,
+  validateUserInfoUpdate,
+  validateUserAvatarUpdate,
+  validateUpdate,
 };

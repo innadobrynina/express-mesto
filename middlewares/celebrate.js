@@ -68,7 +68,7 @@ const validateRegistration = celebrate({
 });
 
 const validateUpdate = celebrate({
-  body: Joi.object().keys({ ...userInfoUpdate, ...userAvatarUpdate, ...EmailAndPassword }),
+  body: Joi.object().keys({ ...userInfoUpdate, ...EmailAndPassword }),
 });
 
 const validateCardInfo = celebrate({
